@@ -6,14 +6,16 @@ public abstract class Inhabitant {
 
     private static final Random RANDOM = new Random();
 
-    private String name;
+    private final String name;
     private int health;
     private boolean isAlive;
     private int experience;
+    private int level = 1;
+    private int nextLevelThreshold = 10;
     private int agility = 1;  // [1 - 30]
-    private int strength;  // [1 - 100]
+    private int strength = 1;  // [1 - 100]
     private int luck;  // [1 - 100]
-    private int gold;
+    protected int gold;
 
 
     public Inhabitant(String name, int health) {
@@ -55,13 +57,32 @@ public abstract class Inhabitant {
     }
 
 
-    public void enemyLooting(Inhabitant enemy) {
+    public int getLevel() { return level; }
+
+
+    private void enemyLooting(Inhabitant enemy) {
         if (!enemy.isAlive) {
             this.gold += enemy.gold;
         }
     }
 
+    public void rewardFor(Inhabitant foe) {
+        if (this != foe) {
+            this.experience += switch (foe.getClass().getSimpleName()) {
+                case "Skeleton" -> 5 * foe.level;
+                case "Goblin" -> 10 * foe.level;
+                default -> throw new IllegalStateException("Reward for wrong enemy");
+            };
+            checkNextLevel();
+            enemyLooting(foe);
+        }
+    }
+
     public void doStrike(Inhabitant foe) {
+        doStrike(0, foe);
+    }
+
+    public void doStrike(int weaponPower, Inhabitant foe) {
         if (foe == this) {
             return;
         }
@@ -69,6 +90,9 @@ public abstract class Inhabitant {
         if (strikeStrength == 0) {
             System.out.printf("%s missed to %s%n", this.name, foe.name);
             return;
+        }
+        if (weaponPower != 0) {  // Перерасчёт урона от оружия от % навыка "сила"
+            strikeStrength = (int) (weaponPower * (float) strikeStrength / 100.0f);
         }
         strikeStrength = isCriticalStrike() ? strikeStrength * 2 : strikeStrength;
         applyDamage(strikeStrength, foe);
@@ -81,7 +105,7 @@ public abstract class Inhabitant {
 
     private boolean isCriticalStrike() {
         int probabilityOfCriticalStrike = RANDOM.nextInt(200) + 1;
-        return probabilityOfCriticalStrike <= luck;
+        return probabilityOfCriticalStrike <= luck;  // При 100% навыке "удача" крит. удар проходит 50 на 50
     }
 
     private void applyDamage(int damage, Inhabitant foe) {
@@ -92,6 +116,13 @@ public abstract class Inhabitant {
             foe.health = 0;
             foe.isAlive = false;
             System.out.printf("%s killed the %s", this.name, foe.name);
+        }
+    }
+
+    private void checkNextLevel() {
+        if (experience >= nextLevelThreshold) {
+            ++level;
+            nextLevelThreshold += nextLevelThreshold * 1.1f;
         }
     }
 }
