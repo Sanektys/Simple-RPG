@@ -105,7 +105,7 @@ public abstract class Inhabitant {
     private void applyDamage(int damage, Inhabitant foe) {
         if (foe.health > damage) {
             foe.health -= damage;
-            System.out.printf("%s has dealt %d damage to %s%n", this.name, damage, foe.name);
+            System.out.printf("%s has dealt %d damage to %s(remain %dHP)%n", this.name, damage, foe.name, foe.health);
         } else {
             foe.health = 0;
             foe.isAlive = false;
@@ -186,5 +186,10 @@ public abstract class Inhabitant {
             enemyLooting(foe);
             checkNextLevel();
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: level - %d (strength:%d, luck:%d, agility:%d", name, level, strength, luck, agility);
     }
 }
