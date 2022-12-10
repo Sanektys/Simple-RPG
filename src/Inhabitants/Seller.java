@@ -128,20 +128,20 @@ public class Seller {
                         return;
                     }
                     if (player.pay(((Weapon) equip).cost)) {
-                        player.getNewEquipment(equip);
-                        isSold = true;
+                        isSold = player.getNewEquipment(equip);
                     } else {
                         System.out.println("=   You don't have enough gold to buy this weapon.                   =");
                     }
                 } else if (equip instanceof Potion) {
                     if (player.pay(((Potion) equip).cost)) {
-                        player.getNewEquipment(equip);
-                        isSold = true;
+                        isSold = player.getNewEquipment(equip);
                     } else {
                         System.out.println("=   You don't have enough gold to buy this potion.                   =");
                     }
                 }
                 if (isSold) {
+                    System.out.println("=   You have acquired follow equipment:                              =");
+                    System.out.printf("=   -> %-62s=", item.getKey());
                     if (item.getValue() > 1) {
                         item.setValue(item.getValue() - 1);
                     } else {
