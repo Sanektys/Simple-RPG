@@ -31,8 +31,8 @@ public abstract class Inhabitant {
         this.name = name;
         if (maxHealth < 1) {
             throw new IllegalArgumentException("In new " + this.getClass().getSimpleName() + " health below zero.");
-        } else if (maxHealth > 2000) {
-            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName() + " health above 2000");
+        } else if (maxHealth > 3000) {
+            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName() + " health above 3000");
         }
         this.maxHealth = maxHealth;
         this.health =  maxHealth;
@@ -41,25 +41,27 @@ public abstract class Inhabitant {
         luck = RANDOM.nextInt(MAX_LUCK / 2) + 1;
     }
 
-    public Inhabitant(String name, int health, int experience, int agility, int strength, int gold) {
-        this(name, health);
+    public Inhabitant(String name, int maxHealth, int level, int gold) {
+        this(name, maxHealth);
 
-        if (experience < 0 || experience > 10_000) {
+        if (level <= 0 || level > MAX_LEVEL) {
             throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
-                                                + " incorrect experience points");
+                                                + " incorrect level of entity");
         }
-        this.experience = experience;
-        checkNextLevel();
-        if (agility < 0 || agility > MAX_AGILITY) {
-            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
-                                               + " incorrect agility points");
+        this.level = level;
+        for (int i = 1; i <= level; ++i) {
+            arrangeNewSkillPoints();
         }
-        this.agility = agility;
-        if (strength < 0 || strength > MAX_STRENGTH) {
-            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
-                                               + " incorrect strength points");
-        }
-        this.strength = strength;
+//        if (agility < 0 || agility > MAX_AGILITY) {
+//            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
+//                                               + " incorrect agility points");
+//        }
+//        this.agility = agility;
+//        if (strength < 0 || strength > MAX_STRENGTH) {
+//            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
+//                                               + " incorrect strength points");
+//        }
+//        this.strength = strength;
         if (gold < 0) {
             throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
                                                + " gold amount below zero");
@@ -103,11 +105,11 @@ public abstract class Inhabitant {
     private void applyDamage(int damage, Inhabitant foe) {
         if (foe.health > damage) {
             foe.health -= damage;
-            System.out.printf("%s has dealt %d damage to %s", this.name, damage, foe.name);
+            System.out.printf("%s has dealt %d damage to %s%n", this.name, damage, foe.name);
         } else {
             foe.health = 0;
             foe.isAlive = false;
-            System.out.printf("%s killed the %s", this.name, foe.name);
+            System.out.printf("%s killed the %s%n", this.name, foe.name);
             rewardFor(foe);
         }
     }
@@ -169,6 +171,7 @@ public abstract class Inhabitant {
     private void enemyLooting(Inhabitant foe) {
         if (!foe.isAlive) {
             this.gold += foe.gold;
+            System.out.printf("%s takes %d gold from the body of %s%n", this.name, foe.gold, foe.name);
             foe.gold = 0;
         }
     }
