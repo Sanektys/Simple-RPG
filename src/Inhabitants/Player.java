@@ -17,14 +17,15 @@ import java.util.concurrent.TimeUnit;
 public class Player extends Inhabitant {
 
     private final Inventory inventory = new Inventory();
+    private static final int INITIAL_HEALTH = 500;
 
     private int currentWeaponPower;
     private int prevAgilityLevel;
     private int prevStrengthLevel;
 
 
-    public Player(String name, int health) {
-        super(name, health);
+    public Player(String name) {
+        super(name, INITIAL_HEALTH);
     }
 
 
@@ -51,6 +52,14 @@ public class Player extends Inhabitant {
     @Override
     public void doStrike(Inhabitant foe) {
         super.doStrike(currentWeaponPower, foe);
+    }
+
+    @Override
+    public void displayStats() {
+        System.out.println("=".repeat(70));
+        System.out.printf("=%1$s%2$s%1$s=%n", " ".repeat(30), "My stats");
+        super.displayStats();
+        System.out.println("=".repeat(70));
     }
 
     @Override

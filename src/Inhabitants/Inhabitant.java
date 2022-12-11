@@ -52,16 +52,6 @@ public abstract class Inhabitant {
         for (int i = 1; i <= level; ++i) {
             arrangeNewSkillPoints();
         }
-//        if (agility < 0 || agility > MAX_AGILITY) {
-//            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
-//                                               + " incorrect agility points");
-//        }
-//        this.agility = agility;
-//        if (strength < 0 || strength > MAX_STRENGTH) {
-//            throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
-//                                               + " incorrect strength points");
-//        }
-//        this.strength = strength;
         if (gold < 0) {
             throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
                                                + " gold amount below zero");
@@ -73,6 +63,13 @@ public abstract class Inhabitant {
     public boolean isAlive() { return isAlive; }
 
     public int getLevel() { return level; }
+
+    public void displayStats() {
+        System.out.printf("= Level %-3d  Experience %5d/%-5d  Health %4d/%-4d  Gold %5d%s=%n",
+                level, experience, nextLevelThreshold, health, maxHealth, gold, " ");
+        System.out.printf("= Strength %3d/%-3d  Luck %3d/%-3d  Agility %2d/%-2d%s=%n",
+                strength, MAX_STRENGTH, luck, MAX_LUCK, agility, MAX_AGILITY, " ");
+    }
 
     public void doStrike(Inhabitant foe) {
         doStrike(0, foe);
