@@ -74,7 +74,8 @@ public class Player extends Inhabitant {
         final String luck = "luck";
         final String agility = "agility";
 
-        try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in))) {
+        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        try {
             final int level = getLevel();
             final boolean itsAgilityLevel = level % 3 == 0;  // Agility можно увеличивать только каждый третий уровень.
             System.out.printf("---==You have reached a new level - %d!==---%n", level);
@@ -145,6 +146,7 @@ public class Player extends Inhabitant {
                     prevStrengthLevel, MAX_STRENGTH, this.luck, MAX_LUCK, prevAgilityLevel, MAX_AGILITY);
         } catch (IOException e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -274,7 +276,8 @@ public class Player extends Inhabitant {
 
         private int pickItem() {
             int number = -1;
-            try (var input = new BufferedReader(new InputStreamReader(System.in))) {
+            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+            try {
                 while (true) {
                     String answer = input.readLine();
                     try {
@@ -296,6 +299,7 @@ public class Player extends Inhabitant {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                System.exit(1);
             }
             return number;
         }

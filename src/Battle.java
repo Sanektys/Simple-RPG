@@ -21,7 +21,8 @@ public class Battle {
         ScheduledExecutorService battleThread = Executors.newSingleThreadScheduledExecutor();
         System.out.println("---==You are in a sinister forest inhabited by dangerous goblins and skeletons==---");
 
-        try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in))) {
+        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        try {
             String command = "null";
             while (!command.equalsIgnoreCase("escape") && player.isAlive()) {
                 Inhabitant enemy = newEnemy(player.getLevel());
@@ -52,6 +53,7 @@ public class Battle {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            System.exit(1);
         }
         battleThread.shutdown();
     }

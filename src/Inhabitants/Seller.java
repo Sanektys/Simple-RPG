@@ -49,7 +49,8 @@ public class Seller {
             int itemsCount = catalogOutput();
             System.out.print("= What would you like to buy? Enter a number in catalog(or type exit): ");
             int number;
-            try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in))) {
+            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+            try {
                 String answer = input.readLine();
                 while (true) {
                     try {
@@ -78,7 +79,8 @@ public class Seller {
                     break;
                 }
             } catch (IOException e) {
-                System.out.println("=  Not quite sure what you need, take another look at the catalog... =");
+                e.printStackTrace();
+                System.exit(1);
             }
         }
     }
