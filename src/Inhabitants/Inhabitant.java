@@ -65,10 +65,10 @@ public abstract class Inhabitant {
     public int getLevel() { return level; }
 
     public void displayStats() {
-        System.out.printf("= Level %-3d  Experience %5d/%-5d  Health %4d/%-4d  Gold %5d%s=%n",
-                level, experience, nextLevelThreshold, health, maxHealth, gold, " ");
-        System.out.printf("= Strength %3d/%-3d  Luck %3d/%-3d  Agility %2d/%-2d%s=%n",
-                strength, MAX_STRENGTH, luck, MAX_LUCK, agility, MAX_AGILITY, " ");
+        System.out.printf("= Level %-3d  Experience %5d/%-5d   Health %4d/%-4d   Gold %5d%s=%n",
+                level, experience, nextLevelThreshold, health, maxHealth, gold, "  ");
+        System.out.printf("=       Strength %3d/%-3d%7$sLuck %3d/%-3d%7$sAgility %2d/%-2d       =%n",
+                strength, MAX_STRENGTH, luck, MAX_LUCK, agility, MAX_AGILITY, " ".repeat(7));
     }
 
     public void doStrike(Inhabitant foe) {

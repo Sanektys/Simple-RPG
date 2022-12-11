@@ -40,6 +40,10 @@ public class Seller {
     }
 
 
+    public void leave() {
+        assortmentUpdater.shutdown();
+    }
+
     synchronized public void trade(Player player) {
         while (true) {
             int itemsCount = catalogOutput();

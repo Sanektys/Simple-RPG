@@ -14,12 +14,13 @@ import java.util.concurrent.TimeUnit;
 public class Battle {
 
     private final Random RANDOM = new Random();
-    private final ScheduledExecutorService battleThread = Executors.newSingleThreadScheduledExecutor();
-
     private final int FIGHT_START_DELAY = 10;
 
+
     public void battle(Player player) {
+        ScheduledExecutorService battleThread = Executors.newSingleThreadScheduledExecutor();
         System.out.println("---==You are in a sinister forest inhabited by dangerous goblins and skeletons==---");
+
         try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in))) {
             String command = "null";
             while (!command.equalsIgnoreCase("escape") && player.isAlive()) {
@@ -28,6 +29,7 @@ public class Battle {
                 System.out.printf("After %d second the fight will start, to escape, type \"escape\"%n",
                         FIGHT_START_DELAY);
                 System.out.println("To use inventory during fight, type \"aid\"");
+
                 var fight = battleThread.schedule(() -> fight(player, enemy),
                         10, TimeUnit.SECONDS);
                 while (!fight.isDone()) {
@@ -46,11 +48,12 @@ public class Battle {
             if (command.equalsIgnoreCase("escape")) {
                 System.out.println("You leaving the sinister forest...");
             } else if (!player.isAlive()) {
-                System.out.print("You have fallen by the death of brave...");
+                System.out.print("You have fallen by the death of brave... ");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        battleThread.shutdown();
     }
 
     private void fight(Player player, Inhabitant enemy) {

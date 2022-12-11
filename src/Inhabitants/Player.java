@@ -49,6 +49,10 @@ public class Player extends Inhabitant {
         inventory.useItem();
     }
 
+    public void leave() {
+        inventory.potionsCoolDown.shutdown();
+    }
+
     @Override
     public void doStrike(Inhabitant foe) {
         super.doStrike(currentWeaponPower, foe);

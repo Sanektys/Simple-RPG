@@ -4,7 +4,6 @@ import Inhabitants.Seller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Scanner;
 
 public class World {
 
@@ -18,18 +17,28 @@ public class World {
     public boolean playerIsHere() { return playerIsHere; }
 
     public void start() {
-        System.out.println("------=====       Welcome to RPG game \"No Name\"!       =====------");
+        System.out.println("-------=====       Welcome to RPG game \"No Name\"!       =====-------");
         System.out.println("---==Before you enter the Town, introduce yourself by your name==---");
-        System.out.print("     My name -> ");
-        String playerName;
-        try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in))) {
-            playerName = input.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
+
+        String playerName = "";
+        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        while (true) {
+            System.out.print("     My name -> ");
+            try {
+                playerName = input.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+            if (playerName.length() < 3) {
+                System.out.println("     Name is too short, try another");
+            } else {
+                break;
+            }
         }
         player = new Player(playerName);
-        System.out.printf("Hello %s, good luck in the Town!%n%n", playerName);
+        playerIsHere = true;
+        System.out.printf("%n     Hello %s, good luck in the Town!%n%n", playerName);
 
         seller = new Seller();
         battle = new Battle();
@@ -37,13 +46,17 @@ public class World {
 
     public void townMenu() {
         displayTownMenu();
-        int choice;
+        int choice = 0;
+        BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            try (Scanner input = new Scanner(System.in)) {
-                choice = input.nextInt();
-            } catch (RuntimeException e) {
+            try {
+                choice = Integer.parseInt(input.readLine());
+            } catch (NumberFormatException e) {
                 System.out.print("Your input is incorrect, please try again: ");
                 continue;
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
             }
             if (choice < 1 || choice > 3) {
                 System.out.print("Your choice number is wrong, try again: ");
@@ -57,9 +70,8 @@ public class World {
             case 3 -> playerIsHere = false;
             default -> throw new IllegalStateException("Incorrect choice in town.");
         }
-        if (!player.isAlive()) {
-            playerIsHere = false;
-            System.out.println("Game is over.");
+        if (!player.isAlive() || !playerIsHere) {
+            exit();
         }
     }
 
@@ -74,5 +86,12 @@ public class World {
         System.out.printf("=  3. Leave town (and game)%s=%n", " ".repeat(42));
         System.out.println("=".repeat(70));
         System.out.print("Your choice -> ");
+    }
+
+    private void exit() {
+        playerIsHere = false;
+        player.leave();
+        seller.leave();
+        System.out.println("Game is over.");
     }
 }
