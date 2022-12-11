@@ -70,6 +70,8 @@ public abstract class Inhabitant {
     }
 
 
+    public boolean isAlive() { return isAlive; }
+
     public int getLevel() { return level; }
 
     public void doStrike(Inhabitant foe) {
@@ -77,7 +79,7 @@ public abstract class Inhabitant {
     }
 
     public void doStrike(int weaponPower, Inhabitant foe) {
-        if (foe == this) {
+        if (foe == this || !isAlive) {
             return;
         }
         int strikeStrength = strikeStrength();
@@ -178,11 +180,13 @@ public abstract class Inhabitant {
 
     private void rewardFor(Inhabitant foe) {
         if (this != foe) {
-            this.experience += switch (foe.getClass().getSimpleName()) {
+            int earnedExperience = switch (foe.getClass().getSimpleName()) {
                 case "Skeleton" -> 5 * foe.level;
                 case "Goblin" -> 10 * foe.level;
                 default -> throw new IllegalStateException("Reward for wrong enemy");
             };
+            this.experience += earnedExperience;
+            System.out.printf("You earned %d experience%n", earnedExperience);
             enemyLooting(foe);
             checkNextLevel();
         }

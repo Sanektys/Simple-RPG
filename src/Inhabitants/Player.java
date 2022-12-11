@@ -42,6 +42,9 @@ public class Player extends Inhabitant {
     }
 
     public void useEquipment() {
+        if (!isAlive()) {
+            return;
+        }
         inventory.useItem();
     }
 
