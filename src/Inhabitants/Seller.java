@@ -21,8 +21,8 @@ public class Seller {
     private final ScheduledExecutorService assortmentUpdater = Executors.newSingleThreadScheduledExecutor();
 
     private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION, 20, 120);
-    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION, 5, 180);
-    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION, 500, 90);
+    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION, 5, 220);
+    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION, 200, 90);
 
 
     public Seller() {
@@ -30,9 +30,9 @@ public class Seller {
                                 Potion.Type.AGILITY_POTION, 3,
                                 Potion.Type.HEALTH_POTION, 6);
 
-        catalog.put(new Weapon("Sword", 250, 10_000, 16), 1);
-        catalog.put(new Weapon("Sledgehammer", 200, 6_000, 8), 1);
-        catalog.put(new Weapon("Tomahawk", 150, 2_000, 4), 1);
+        catalog.put(new Weapon("Sword", 250, 4_000, 16), 1);
+        catalog.put(new Weapon("Sledgehammer", 200, 2_000, 8), 1);
+        catalog.put(new Weapon("Tomahawk", 150, 1_000, 4), 1);
 
         updateAssortment();
 
@@ -46,13 +46,14 @@ public class Seller {
 
     synchronized public void trade(Player player) {
         while (true) {
-            int itemsCount = catalogOutput();
+            int itemsCount = catalogOutput(player.gold);
             System.out.print("= What would you like to buy? Enter a number in catalog(or type exit): ");
             int number;
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+            String answer;
             try {
-                String answer = input.readLine();
                 while (true) {
+                    answer = input.readLine();
                     try {
                         number = Integer.parseInt(answer);
                     } catch (NumberFormatException e) {
@@ -60,11 +61,11 @@ public class Seller {
                             tradeExitDisplay();
                             return;
                         }
-                        System.out.print("=   Incorrect entered number, try again: ");
+                        System.out.print("= Incorrect entered number, try again: ");
                         continue;
                     }
                     if (number <= 0 || number > itemsCount) {
-                        System.out.print("=   Wrong number in the catalog, try again: ");
+                        System.out.print("= Wrong number in the catalog, try again: ");
                         continue;
                     }
                     break;
@@ -76,6 +77,7 @@ public class Seller {
                     answer = input.readLine();
                 }
                 if (answer.equalsIgnoreCase("no")) {
+                    tradeExitDisplay();
                     break;
                 }
             } catch (IOException e) {
@@ -85,38 +87,37 @@ public class Seller {
         }
     }
 
-    private int catalogOutput() {
-        System.out.println("""
-        ======================================================================
-        ======            "Sunny & Berry Rag" store catalog             ======
-        ======================================================================
-        =   Available goods:                                                 =
-        """);
+    private int catalogOutput(int playerGold) {
+        System.out.println("=".repeat(120));
+        System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(12), " ".repeat(31),
+                "\"Sunny & Berry Rag\" store catalog ");
+        System.out.println("=".repeat(120));
+        System.out.printf("=====       %1$s%2$s%3$s       =====%n", "Available goods: ", " ".repeat(64),
+                String.format("Your gold: %4d", playerGold));
+
         int count = 0;
         for (var item : catalog.entrySet()) {
             ++count;
-            System.out.printf("= %d -> ", count);
+            System.out.printf("= (%d) ", count);
             if (item.getKey() instanceof Weapon) {
                 System.out.print("Weapon - ");
             } else if (item.getKey() instanceof Potion) {
                 System.out.print("Potion - ");
             }
-            System.out.print(item.getKey());
-            System.out.printf("(available %d pieces)\t=", item.getValue());
+            System.out.printf("%-104s", String.format("%s (available %d pieces)", item.getKey(), item.getValue()));
+            System.out.println("=");
         }
-        System.out.println("""
-        ======================================================================
-        """);
+        System.out.println("=".repeat(120));
         return count;
     }
 
     private void tradeExitDisplay() {
-        System.out.println("""
-        ======================================================================
-        ======                Goodbye, come back again!                 ======
-        ========      The assortment is updated every 10 minutes      ========
-        ======================================================================
-        """);
+        System.out.println("=".repeat(120));
+        System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(10), " ".repeat(37),
+                "Goodbye, come back again! ");
+        System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(16), " ".repeat(23),
+                "The assortment is updated every 10 minutes");
+        System.out.println("=".repeat(120));
     }
 
     private void sellItem(Player player, int catalogNumber) {
@@ -128,26 +129,30 @@ public class Seller {
             if (position == catalogNumber) {
                 var equip = item.getKey();
                 boolean isSold = false;
-                if (equip instanceof Weapon) {
-                    if (player.getLevel() < ((Weapon) equip).requiredLevel) {
-                        System.out.println("=   Sorry, but you don't have enough experience for this weapon.     =");
+                if (equip instanceof Weapon weapon) {
+                    if (player.getLevel() < weapon.requiredLevel) {
+                        System.out.printf("=   %1$s%2$s=%n",
+                                "Sorry, but you don't have enough experience for this weapon.", " ".repeat(55));
                         return;
                     }
-                    if (player.pay(((Weapon) equip).cost)) {
+                    if (player.pay(weapon.cost)) {
                         isSold = player.getNewEquipment(equip);
                     } else {
-                        System.out.println("=   You don't have enough gold to buy this weapon.                   =");
+                        System.out.printf("=   %1$s%2$s=%n",
+                                "You don't have enough gold to buy this weapon.", " ".repeat(69));
                     }
-                } else if (equip instanceof Potion) {
-                    if (player.pay(((Potion) equip).cost)) {
+                } else if (equip instanceof Potion potion) {
+                    if (player.pay(potion.cost)) {
                         isSold = player.getNewEquipment(equip);
                     } else {
-                        System.out.println("=   You don't have enough gold to buy this potion.                   =");
+                        System.out.printf("=   %1$s%2$s=%n",
+                                "You don't have enough gold to buy this potion.", " ".repeat(69));
                     }
                 }
                 if (isSold) {
-                    System.out.println("=   You have acquired follow equipment:                              =");
-                    System.out.printf("=   -> %-62s=", item.getKey());
+                    System.out.printf("=   %1$s%2$s=%n",
+                            "You have acquired follow equipment:", " ".repeat(80));
+                    System.out.printf("=   -> %-112s=%n", item.getKey());
                     if (item.getValue() > 1) {
                         item.setValue(item.getValue() - 1);
                     } else {

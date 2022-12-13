@@ -17,15 +17,16 @@ import java.util.concurrent.TimeUnit;
 public class Player extends Inhabitant {
 
     private final Inventory inventory = new Inventory();
-    private static final int INITIAL_HEALTH = 500;
+    private static final int INITIAL_HEALTH = 100;
+    private static final int INITIAL_GOLD = 300;
 
     private int currentWeaponPower;
-    private int prevAgilityLevel;
-    private int prevStrengthLevel;
+    private volatile int prevAgilityLevel = agility;
+    private volatile int prevStrengthLevel = strength;
 
 
     public Player(String name) {
-        super(name, INITIAL_HEALTH);
+        super(name, INITIAL_HEALTH, 1, INITIAL_GOLD);
     }
 
 
@@ -54,8 +55,8 @@ public class Player extends Inhabitant {
     }
 
     @Override
-    public void doStrike(Inhabitant foe) {
-        super.doStrike(currentWeaponPower, foe);
+    public int doStrike(Inhabitant foe) {
+        return super.doStrike(currentWeaponPower, foe);
     }
 
     @Override
@@ -68,7 +69,7 @@ public class Player extends Inhabitant {
 
     @Override
     protected void arrangeNewSkillPoints() {
-        health = maxHealth += 50;
+        health = maxHealth += 30;
 
         final String strength = "strength";
         final String luck = "luck";
@@ -78,7 +79,7 @@ public class Player extends Inhabitant {
         try {
             final int level = getLevel();
             final boolean itsAgilityLevel = level % 3 == 0;  // Agility можно увеличивать только каждый третий уровень.
-            System.out.printf("---==You have reached a new level - %d!==---%n", level);
+            System.out.printf("%n---==You have reached a new level - %d!==---%n", level);
             if (prevStrengthLevel >= MAX_STRENGTH && this.luck >= MAX_LUCK) {
                 if (!itsAgilityLevel || prevAgilityLevel >= MAX_AGILITY) {
                     System.out.println("No skills that could be improved");
@@ -115,31 +116,33 @@ public class Player extends Inhabitant {
                 }
                 break;
             }
-            switch (answer) {
-                case strength -> {
-                    if (itsAgilityLevel) {
-                        prevStrengthLevel += 2;
-                        this.strength += 2;
-                        System.out.println("Strength increased by 2 points");
-                    } else {
-                        ++prevStrengthLevel;
-                        ++this.strength;
-                        System.out.println("Strength increased by 1 point");
+            synchronized (skillsMonitor) {
+                switch (answer) {
+                    case strength -> {
+                        if (itsAgilityLevel) {
+                            prevStrengthLevel += 2;
+                            this.strength += 2;
+                            System.out.println("Strength increased by 2 points");
+                        } else {
+                            ++prevStrengthLevel;
+                            ++this.strength;
+                            System.out.println("Strength increased by 1 point");
+                        }
                     }
-                }
-                case luck -> {
-                    if (itsAgilityLevel) {
-                        this.luck += 2;
-                        System.out.println("Luck increased by 2 points");
-                    } else {
-                        ++this.luck;
-                        System.out.println("Luck increased by 1 point");
+                    case luck -> {
+                        if (itsAgilityLevel) {
+                            this.luck += 2;
+                            System.out.println("Luck increased by 2 points");
+                        } else {
+                            ++this.luck;
+                            System.out.println("Luck increased by 1 point");
+                        }
                     }
-                }
-                case agility -> {
-                    ++prevAgilityLevel;
-                    ++this.agility;
-                    System.out.println("Agility increased by 1 point");
+                    case agility -> {
+                        ++prevAgilityLevel;
+                        ++this.agility;
+                        System.out.println("Agility increased by 1 point");
+                    }
                 }
             }
             System.out.printf("My stats:  Strength - %d/%d,  Luck - %d/%d,  Agility - %d/%d%n",
@@ -175,18 +178,21 @@ public class Player extends Inhabitant {
         }
 
         private void display() {
-            System.out.println("""
-                    ======================================================================
-                    ========                     My inventory                     ========
-                    ======================================================================
-                    """);
-            var iterator = inventory.iterator();
-            for (int i = 0; i < inventory.size(); ++i) {
-                System.out.printf("= (%d)  %-62s=\n", i + 1, iterator.next());
+            System.out.println("=".repeat(120));
+            System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(12), " ".repeat(42),
+                    "My inventory");
+            System.out.println("=".repeat(120));
+            if (inventory.size() == 0) {
+                System.out.printf("=%s=%n", " ".repeat(118));
+                System.out.printf("=%1$s%2$s%1$s=%n", " ".repeat(48), "There is nothing here!");
+                System.out.printf("=%s=%n", " ".repeat(118));
+            } else {
+                var iterator = inventory.iterator();
+                for (int i = 1; i <= inventory.size(); ++i) {
+                    System.out.printf("= (%d)  %-112s=%n", i, iterator.next());
+                }
             }
-            System.out.println("""
-                    ======================================================================
-                    """);
+            System.out.println("=".repeat(120));
         }
 
         private void useItem() {
@@ -198,12 +204,12 @@ public class Player extends Inhabitant {
             }
             Equipment equip = inventory.get(number - 1);
             inventory.remove(number - 1);
-            System.out.println("=   You picked follow equipment:                                     =");
-            System.out.printf("=   -> %-62s=%n", equip);
+            System.out.printf("=   %1$s%2$s=%n", "You picked follow equipment:", " ".repeat(87));
+            System.out.printf("=   -> %-112s=%n", equip);
             if (equip instanceof Weapon weapon) {
                 currentWeaponPower = weapon.power;
-                System.out.printf("=   Now you can deal up to %3d damage!                               =%n",
-                        currentWeaponPower);
+                System.out.printf("=   %1$s%2$s=%n",
+                        String.format("Now you can deal up to %3d damage!", currentWeaponPower), " ".repeat(81));
             } else if (equip instanceof Potion potion) {
                 switch (potion.type) {
                     case STRENGTH_POTION -> {
@@ -216,13 +222,15 @@ public class Player extends Inhabitant {
                                     strength = prevStrengthLevel;
                                 }
                             }
+                            System.out.println("The potion of strength has ceased to work!");
                         }, 3, TimeUnit.MINUTES);
                         synchronized (skillsMonitor) {
                             prevStrengthLevel = strength;
                             strength += potion.statePointsImprovement;
                         }
-                        System.out.printf("=   Now your strength increased to %3d for three minutes!            =%n",
-                                strength);
+                        System.out.printf("=   %1$s%2$s=%n",
+                                String.format("Now your strength increased to %3d for three minutes!", strength),
+                                " ".repeat(62));
                     }
                     case AGILITY_POTION -> {
                         if (agilityPotionCanceller != null) {
@@ -234,29 +242,38 @@ public class Player extends Inhabitant {
                                     agility = prevAgilityLevel;
                                 }
                             }
+                            System.out.println("The potion of agility has ceased to work!");
                         }, 5, TimeUnit.MINUTES);
                         synchronized (skillsMonitor) {
                             prevAgilityLevel = agility;
                             agility += potion.statePointsImprovement;
                         }
-                        System.out.printf("=   Now your agility increased to %2d for five minutes!              =%n",
-                                agility);
+                        System.out.printf("=   %1$s%2$s=%n",
+                                String.format("Now your agility increased to %2d for five minutes!", agility),
+                                " ".repeat(65));
                     }
                     case HEALTH_POTION -> {
-                        int actualHealing = potion.statePointsImprovement;
-                        if (actualHealing >= maxHealth - health) {
-                            health += actualHealing;
+                        if (health == maxHealth) {
+                            System.out.printf("=   %1$s%2$s=%n", "You don't need a potion, you have full health.",
+                                    " ".repeat(69));
+                            inventory.add(potion);
                         } else {
-                            actualHealing = maxHealth - health;
-                            health = maxHealth;
+                            int healing = potion.statePointsImprovement;
+                            if (health + healing >= maxHealth) {
+                                healing = maxHealth - health;
+                                health = maxHealth;
+                            } else {
+                                health += healing;
+                            }
+                            System.out.printf("=   %1$s%2$s=%n",
+                                    String.format("You healed %3d HP, now you have %4d HP.", healing, health),
+                                    " ".repeat(75));
                         }
-                        System.out.printf("=   You healed %4d HP, now you have %5d HP.                          =%n",
-                                actualHealing, health);
                     }
                     default -> throw new IllegalStateException("Wrong used potion");
                 }
             }
-            System.out.println("======================================================================");
+            System.out.println("=".repeat(120));
         }
 
         private boolean dropEquipment() {
@@ -268,9 +285,9 @@ public class Player extends Inhabitant {
             }
             Equipment equip = inventory.get(number - 1);
             inventory.remove(number - 1);
-            System.out.println("=   You abandon follow equipment:                                    =");
-            System.out.printf("=   -> %-62s=%n", equip);
-            System.out.println("======================================================================");
+            System.out.printf("=   %1$s%2$s=%n", "You abandon follow equipment:", " ".repeat(86));
+            System.out.printf("=   -> %-112s=%n", equip);
+            System.out.println("=".repeat(120));
             return true;
         }
 
@@ -278,14 +295,20 @@ public class Player extends Inhabitant {
             int number = -1;
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
             try {
+                if (inventory.size() == 0) {
+                    System.out.print("\n(Inventory is empty, press \"enter\" to exit): ");
+                    input.readLine();
+                    return -1;
+                }
                 while (true) {
                     String answer = input.readLine();
                     try {
                         number = Integer.parseInt(answer);
                     } catch (NumberFormatException e) {
                         if (answer.equalsIgnoreCase("cancel")) {
-                            System.out.println("=   All items remain in inventory...                                 =");
-                            System.out.println("======================================================================");
+                            System.out.printf("=   %1$s%2$s=%n",
+                                    "All items remain in inventory...", " ".repeat(83));
+                            System.out.println("=".repeat(120));
                             return -1;
                         }
                         System.out.print("=   You entered an invalid answer, enter a number: ");

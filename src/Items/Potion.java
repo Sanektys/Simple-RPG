@@ -23,13 +23,12 @@ public class Potion implements Equipment {
     @Override
     public String toString() {
         return switch (type) {
-            case STRENGTH_POTION -> String.format("Strength potion: increases strength by %d. Costs %d gold.",
-                    statePointsImprovement, cost);
-            case AGILITY_POTION -> String.format("Agility potion: increases agility by %d. Costs %d gold.",
-                    statePointsImprovement, cost);
-            case HEALTH_POTION -> String.format("Health potion: restores %d health points. Costs %d gold.",
-                    statePointsImprovement, cost);
-            default -> "undefined potion";
+            case STRENGTH_POTION -> String.format("%16s:  %-27s Costs %3d gold.",
+                    "Strength potion", String.format("increases strength by %2d.", statePointsImprovement), cost);
+            case AGILITY_POTION -> String.format("%16s:  %-27s Costs %3d gold.",
+                    "Agility potion", String.format("increases agility by %2d.", statePointsImprovement), cost);
+            case HEALTH_POTION -> String.format("%16s:  %-27s Costs %3d gold.",
+                    "Health potion", String.format("restores %3d health points.", statePointsImprovement), cost);
         };
     }
 

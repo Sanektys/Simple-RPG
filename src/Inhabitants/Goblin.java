@@ -9,15 +9,21 @@ public class Goblin extends Inhabitant {
                         : level < 40 ? "Goblin Lumberjack"
                         : level < 60 ? "Goblin Butcher"
                         : level < 80 ? "Goblin Master" : "Goblin Behemoth",
-                200 + level * 25, level, RANDOM.nextInt(251) + 50);
-        WEAPON_POWER = level < 20 ? 100
-                : level < 40 ? 150
-                : level < 60 ? 200
-                : level < 80 ? 250 : 300;
+                50, level, RANDOM.nextInt(121) + 40);
+        WEAPON_POWER = level < 20 ? 50
+                : level < 40 ? 100
+                : level < 60 ? 150
+                : level < 80 ? 200 : 300;
     }
 
     @Override
-    public void doStrike(Inhabitant foe) {
-        super.doStrike(WEAPON_POWER, foe);
+    public int doStrike(Inhabitant foe) {
+        return super.doStrike(WEAPON_POWER, foe);
+    }
+
+    @Override
+    protected void arrangeNewSkillPoints() {
+        super.arrangeNewSkillPoints();
+        health = maxHealth += 25;
     }
 }

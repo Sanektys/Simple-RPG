@@ -18,7 +18,7 @@ public class Weapon implements Equipment {
 
     @Override
     public String toString() {
-        return String.format("%s: deals %d damage. Costs %d gold. Required level - %d.",
+        return String.format("%16s:  deals %3d damage. Costs %,4d gold. Required level - %2d.",
                 name, power, cost, requiredLevel);
     }
 

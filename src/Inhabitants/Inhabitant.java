@@ -16,11 +16,11 @@ public abstract class Inhabitant {
     private final int MAX_LEVEL = 100;
     private int nextLevelThreshold = 10;
 
-    protected int agility = 1;  // [1 - 30]
+    protected volatile int agility = 1;  // [1 - 30]
     protected final int MAX_AGILITY = 30;
-    protected int strength = 1;  // [1 - 100]
+    protected volatile int strength = 1;  // [1 - 100]
     protected final int MAX_STRENGTH = 100;
-    protected int luck;  // [1 - 100]
+    protected int luck = 1;  // [1 - 100]
     protected final int MAX_LUCK = 100;
     protected final Object skillsMonitor = new Object();
 
@@ -37,8 +37,6 @@ public abstract class Inhabitant {
         this.maxHealth = maxHealth;
         this.health =  maxHealth;
         isAlive = true;
-
-        luck = RANDOM.nextInt(MAX_LUCK / 2) + 1;
     }
 
     public Inhabitant(String name, int maxHealth, int level, int gold) {
@@ -48,8 +46,8 @@ public abstract class Inhabitant {
             throw new IllegalArgumentException("In new " + this.getClass().getSimpleName()
                                                 + " incorrect level of entity");
         }
-        this.level = level;
-        for (int i = 1; i <= level; ++i) {
+        for (int i = 1; i < level; ++i) {
+            ++this.level;
             arrangeNewSkillPoints();
         }
         if (gold < 0) {
@@ -64,35 +62,42 @@ public abstract class Inhabitant {
 
     public int getLevel() { return level; }
 
+    public String getShortStats() {
+        return String.format("(%s) [%d/%dHP]", name, health, maxHealth);
+    }
+
     public void displayStats() {
-        System.out.printf("= Level %-3d  Experience %5d/%-5d   Health %4d/%-4d   Gold %5d%s=%n",
+        System.out.printf("= Level %-3d  Experience %5d/%-5d   Health %4d/%-4d   Gold %-5d%s=%n",
                 level, experience, nextLevelThreshold, health, maxHealth, gold, "  ");
-        System.out.printf("=       Strength %3d/%-3d%7$sLuck %3d/%-3d%7$sAgility %2d/%-2d       =%n",
+        System.out.printf("=      Strength %3d/%-3d%7$sLuck %3d/%-3d%7$sAgility %2d/%-2d       =%n",
                 strength, MAX_STRENGTH, luck, MAX_LUCK, agility, MAX_AGILITY, " ".repeat(7));
     }
 
-    public void doStrike(Inhabitant foe) {
-        doStrike(0, foe);
+    public int doStrike(Inhabitant foe) {
+        return doStrike(0, foe);
     }
 
-    public void doStrike(int weaponPower, Inhabitant foe) {
+    public int doStrike(int weaponPower, Inhabitant foe) {
         if (foe == this || !isAlive) {
-            return;
+            return -1;
         }
         int strikeStrength = strikeStrength();
         if (strikeStrength == 0) {
-            System.out.printf("%s missed to %s%n", this.name, foe.name);
-            return;
+            return 0;
         }
         if (weaponPower != 0) {  // Перерасчёт урона от оружия от % навыка "сила"
             strikeStrength = (int) (weaponPower * (float) strikeStrength / 100.0f);
+            if (strikeStrength == 0) {
+                strikeStrength = 1;
+            }
         }
         strikeStrength = isCriticalStrike() ? strikeStrength * 2 : strikeStrength;
         applyDamage(strikeStrength, foe);
+        return strikeStrength;
     }
 
     private int strikeStrength() {
-        int probabilityOfFail = RANDOM.nextInt(150) + 1 - luck;
+        int probabilityOfFail = RANDOM.nextInt(level + 6) + 1 - luck;
         return (agility * 3 > probabilityOfFail) ? strength : 0;
     }
 
@@ -104,12 +109,13 @@ public abstract class Inhabitant {
     private void applyDamage(int damage, Inhabitant foe) {
         if (foe.health > damage) {
             foe.health -= damage;
-            System.out.printf("%s has dealt %d damage to %s(remain %dHP)%n", this.name, damage, foe.name, foe.health);
         } else {
             foe.health = 0;
             foe.isAlive = false;
-            System.out.printf("%s killed the %s%n", this.name, foe.name);
-            rewardFor(foe);
+            System.out.printf("\t%s killed %s%n", this.name, foe.name);
+            if (this instanceof Player) {
+                rewardFor(foe);
+            }
         }
     }
 
@@ -122,47 +128,52 @@ public abstract class Inhabitant {
     }
 
     protected void arrangeNewSkillPoints() {
-        health = maxHealth += 50;
-        if (level % 3 == 0) {
-            switch (RANDOM.nextInt(5)) {
-                case 0, 1, 2 -> {
-                    if (agility < MAX_AGILITY) {
-                        ++agility;
-                    } else if (strength < MAX_STRENGTH) {
-                        ++strength;
-                    } else if (luck < MAX_LUCK) {
-                        ++luck;
-                    }}
-                case 3 -> {
-                    if (strength < MAX_STRENGTH - 1) {
-                        strength += 2;
-                    } else if (luck < MAX_LUCK - 1) {
-                        luck += 2;
-                    }}
-                case 4 -> {
-                    if (luck < MAX_LUCK - 1) {
-                        luck += 2;
-                    } else if (strength < MAX_STRENGTH - 1) {
-                        strength += 2;
+        synchronized (skillsMonitor) {
+            if (level % 3 == 0) {
+                switch (RANDOM.nextInt(5)) {
+                    case 0, 1, 2 -> {
+                        if (agility < MAX_AGILITY) {
+                            ++agility;
+                        } else if (strength < MAX_STRENGTH) {
+                            ++strength;
+                        } else if (luck < MAX_LUCK) {
+                            ++luck;
+                        }
                     }
+                    case 3 -> {
+                        if (strength < MAX_STRENGTH - 1) {
+                            strength += 2;
+                        } else if (luck < MAX_LUCK - 1) {
+                            luck += 2;
+                        }
+                    }
+                    case 4 -> {
+                        if (luck < MAX_LUCK - 1) {
+                            luck += 2;
+                        } else if (strength < MAX_STRENGTH - 1) {
+                            strength += 2;
+                        }
+                    }
+                    default -> throw new IllegalStateException("Error during auto arrange skills");
                 }
-                default -> throw new IllegalStateException("Error during auto arrange skills");
-            }
-        } else {
-            switch (RANDOM.nextInt(2)) {
-                case 0 -> {
-                    if (strength < MAX_STRENGTH) {
-                        ++strength;
-                    } else {
-                        luck = luck < MAX_LUCK ? luck + 1 : luck;
-                    }}
-                case 1 -> {
-                    if (luck < MAX_LUCK) {
-                        ++luck;
-                    } else {
-                        strength = strength < MAX_STRENGTH ? strength + 1 : strength;
-                    }}
-                default -> throw new IllegalStateException("Error during auto arrange skills");
+            } else {
+                switch (RANDOM.nextInt(2)) {
+                    case 0 -> {
+                        if (strength < MAX_STRENGTH) {
+                            ++strength;
+                        } else {
+                            luck = luck < MAX_LUCK ? luck + 1 : luck;
+                        }
+                    }
+                    case 1 -> {
+                        if (luck < MAX_LUCK) {
+                            ++luck;
+                        } else {
+                            strength = strength < MAX_STRENGTH ? strength + 1 : strength;
+                        }
+                    }
+                    default -> throw new IllegalStateException("Error during auto arrange skills");
+                }
             }
         }
     }
@@ -170,7 +181,7 @@ public abstract class Inhabitant {
     private void enemyLooting(Inhabitant foe) {
         if (!foe.isAlive) {
             this.gold += foe.gold;
-            System.out.printf("%s takes %d gold from the body of %s%n", this.name, foe.gold, foe.name);
+            System.out.printf("\t%s takes %d gold from the body of %s%n", this.name, foe.gold, foe.name);
             foe.gold = 0;
         }
     }
@@ -183,7 +194,7 @@ public abstract class Inhabitant {
                 default -> throw new IllegalStateException("Reward for wrong enemy");
             };
             this.experience += earnedExperience;
-            System.out.printf("You earned %d experience%n", earnedExperience);
+            System.out.printf("\tYou earned %d experience%n", earnedExperience);
             enemyLooting(foe);
             checkNextLevel();
         }
@@ -191,6 +202,6 @@ public abstract class Inhabitant {
 
     @Override
     public String toString() {
-        return String.format("%s: level - %d (strength:%d, luck:%d, agility:%d", name, level, strength, luck, agility);
+        return String.format("%s: level - %d (strength:%d, luck:%d, agility:%d)", name, level, strength, luck, agility);
     }
 }
