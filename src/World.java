@@ -90,7 +90,6 @@ public class World {
 
     private void exit() {
         playerIsHere = false;
-        player.leave();
         seller.leave();
         System.out.println("Game is over.");
     }

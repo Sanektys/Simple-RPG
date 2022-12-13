@@ -7,22 +7,22 @@ import Items.Weapon;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Seller {
 
-    private final Map<Equipment, Integer> catalog = new LinkedHashMap<>();
+    private final Map<Equipment, Integer> catalog = new ConcurrentHashMap<>();
     private final Map<Potion.Type, Integer> maxPotionCount;
 
     private final ScheduledExecutorService assortmentUpdater = Executors.newSingleThreadScheduledExecutor();
 
-    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION, 20, 120);
-    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION, 5, 220);
-    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION, 200, 90);
+    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION, 20, 340);
+    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION, 5, 570);
+    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION, 100, 90);
 
 
     public Seller() {

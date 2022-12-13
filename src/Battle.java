@@ -6,24 +6,19 @@ import Inhabitants.Skeleton;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class Battle {
 
     private final Random RANDOM = new Random();
-    private final int FIGHT_START_DELAY = 10;
-    private final int BATTLE_REPORT_DELAY = 5000;
+    private final int FIGHT_START_DELAY = 10_000;
+    private final int BATTLE_REPORT_DELAY = 5_000;
     private final int STRIKES_DELAY = 200;
 
     private volatile boolean fightActive;
 
 
     public void battle(Player player) {
-        ScheduledExecutorService battleThread = Executors.newSingleThreadScheduledExecutor();
         System.out.println("\n---==You are in a sinister forest inhabited by dangerous goblins and skeletons==---");
-
         InputStreamReader input = new InputStreamReader(System.in);
         try {
             char command = '\0';
@@ -33,12 +28,13 @@ public class Battle {
                 while (true) {  // Вход в инвентарь до начала боя, откладывает его начало
                     System.out.printf("%nYour next enemy: %s%n%n", enemy);
                     System.err.printf("After %d second the fight will start, to escape, type \"0\"%n",
-                            FIGHT_START_DELAY);
+                            FIGHT_START_DELAY / 1000);
                     System.out.println("To use inventory during fight, type \"1\"");
 
-                    var fight = battleThread.schedule(() -> fight(player, enemy),
-                            FIGHT_START_DELAY, TimeUnit.SECONDS);
-                    while (fightActive || !fight.isDone()) {
+                    Thread battleThread = new Thread(() -> fight(player, enemy));
+                    battleThread.start();
+
+                    while (fightActive || battleThread.isAlive()) {
                         if (input.ready()) {
                             command = (char) input.read();
                         } else {
@@ -55,13 +51,14 @@ public class Battle {
                         if (command != '0' && command != '1') {
                             System.out.println("Enter \"0\" for escape or \"1\" to look inventory");
                         } else if (command == '1') {
-                            fight.cancel(true);
+                            battleThread.interrupt();
                             if (!fightActive) {
-                                player.useEquipment();  // Битва отменена, переход обратно к представлению противника
+                                player.useEquipment();  // Битва отсрочена, переход обратно к представлению противника
                             }
-                        } else if (!fight.isCancelled()) {
-                            fight.cancel(false);
-                        } else if (fightActive) {
+                        } else if (!fightActive) {
+                            battleThread.interrupt();
+                            break;
+                        } else {
                             System.out.println("Too late for escape...");
                         }
                     }
@@ -81,10 +78,15 @@ public class Battle {
             e.printStackTrace();
             System.exit(1);
         }
-        battleThread.shutdown();
     }
 
     private void fight(Player player, Inhabitant enemy) {
+        try {
+            Thread.sleep(FIGHT_START_DELAY);
+        } catch (InterruptedException e) {
+            return;
+        }
+
         int playerMisses = 0, playerHits = 0, enemyMisses = 0, enemyHits = 0;
         long startReportTime = 0;
         fightActive = true;

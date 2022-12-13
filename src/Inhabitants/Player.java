@@ -9,10 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class Player extends Inhabitant {
 
@@ -48,10 +44,6 @@ public class Player extends Inhabitant {
             return;
         }
         inventory.useItem();
-    }
-
-    public void leave() {
-        inventory.potionsCoolDown.shutdown();
     }
 
     @Override
@@ -159,9 +151,8 @@ public class Player extends Inhabitant {
         private final List<Equipment> inventory = new LinkedList<>();
         private final int INVENTORY_SIZE = 10;
 
-        private final ScheduledExecutorService potionsCoolDown = Executors.newScheduledThreadPool(2);
-        private ScheduledFuture<?> agilityPotionCanceller;
-        private ScheduledFuture<?> strengthPotionCanceller;
+        private Thread agilityPotionCanceller;
+        private Thread strengthPotionCanceller;
 
 
         private boolean addEquipment(Equipment equip) {
@@ -213,44 +204,60 @@ public class Player extends Inhabitant {
             } else if (equip instanceof Potion potion) {
                 switch (potion.type) {
                     case STRENGTH_POTION -> {
-                        if (strengthPotionCanceller != null) {
-                            strengthPotionCanceller.cancel(true);
-                        }
-                        strengthPotionCanceller = potionsCoolDown.schedule(() -> {
-                            synchronized (skillsMonitor) {
-                                if (!Thread.interrupted()) {
+                        if (strengthPotionCanceller != null && strengthPotionCanceller.isAlive()) {
+                            System.out.printf("=   %1$s%2$s=%n",
+                                    "The strength potion is still working, you can't drink it any more!",
+                                    " ".repeat(49));
+                        } else {
+                            strengthPotionCanceller = new Thread(() -> {
+                                try {
+                                    Thread.sleep(3 * 60 * 1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                synchronized (skillsMonitor) {
                                     strength = prevStrengthLevel;
                                 }
+                                System.out.println("The potion of strength has ceased to work!");
+                            });
+                            strengthPotionCanceller.setDaemon(true);
+                            strengthPotionCanceller.start();
+                            synchronized (skillsMonitor) {
+                                prevStrengthLevel = strength;
+                                strength += potion.statePointsImprovement;
                             }
-                            System.out.println("The potion of strength has ceased to work!");
-                        }, 3, TimeUnit.MINUTES);
-                        synchronized (skillsMonitor) {
-                            prevStrengthLevel = strength;
-                            strength += potion.statePointsImprovement;
+                            System.out.printf("=   %1$s%2$s=%n",
+                                    String.format("Now your strength increased to %3d for three minutes!", strength),
+                                    " ".repeat(62));
                         }
-                        System.out.printf("=   %1$s%2$s=%n",
-                                String.format("Now your strength increased to %3d for three minutes!", strength),
-                                " ".repeat(62));
                     }
                     case AGILITY_POTION -> {
-                        if (agilityPotionCanceller != null) {
-                            agilityPotionCanceller.cancel(true);
-                        }
-                        agilityPotionCanceller = potionsCoolDown.schedule(() -> {
-                            synchronized (skillsMonitor) {
-                                if (!Thread.interrupted()) {
+                        if (agilityPotionCanceller != null && agilityPotionCanceller.isAlive()) {
+                            System.out.printf("=   %1$s%2$s=%n",
+                                    "The agility potion is still working, you can't drink it any more!",
+                                    " ".repeat(50));
+                        } else {
+                            agilityPotionCanceller = new Thread(() -> {
+                                try {
+                                    Thread.sleep(5 * 60 * 1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                synchronized (skillsMonitor) {
                                     agility = prevAgilityLevel;
                                 }
+                                System.out.println("The potion of agility has ceased to work!");
+                            });
+                            agilityPotionCanceller.setDaemon(true);
+                            agilityPotionCanceller.start();
+                            synchronized (skillsMonitor) {
+                                prevAgilityLevel = agility;
+                                agility += potion.statePointsImprovement;
                             }
-                            System.out.println("The potion of agility has ceased to work!");
-                        }, 5, TimeUnit.MINUTES);
-                        synchronized (skillsMonitor) {
-                            prevAgilityLevel = agility;
-                            agility += potion.statePointsImprovement;
+                            System.out.printf("=   %1$s%2$s=%n",
+                                    String.format("Now your agility increased to %2d for five minutes!", agility),
+                                    " ".repeat(65));
                         }
-                        System.out.printf("=   %1$s%2$s=%n",
-                                String.format("Now your agility increased to %2d for five minutes!", agility),
-                                " ".repeat(65));
                     }
                     case HEALTH_POTION -> {
                         if (health == maxHealth) {
