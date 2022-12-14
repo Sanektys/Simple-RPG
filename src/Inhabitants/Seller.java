@@ -19,16 +19,22 @@ public class Seller {
     private final Map<Potion.Type, Integer> maxPotionCount;
 
     private final ScheduledExecutorService assortmentUpdater = Executors.newSingleThreadScheduledExecutor();
+    private final int ASSORTMENT_UPDATE_TIME = 15;
 
-    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION, 15, 340);
-    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION,    5, 570);
-    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION,    100,  90);
+    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION,
+             15, 340);
+    private final Potion AGILITY_POTION  = new Potion(Potion.Type.AGILITY_POTION,
+              5, 570);
+    private final Potion HEALTH_POTION   = new Potion(Potion.Type.HEALTH_POTION,
+            100,  90);
+    private final Potion ENHANCED_HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION,
+            250, 190);
 
 
     public Seller() {
-        maxPotionCount = Map.of(Potion.Type.STRENGTH_POTION, 3,
-                                Potion.Type.AGILITY_POTION,  2,
-                                Potion.Type.HEALTH_POTION,   6);
+        maxPotionCount = Map.of(Potion.Type.STRENGTH_POTION, 2,
+                                Potion.Type.AGILITY_POTION,  1,
+                                Potion.Type.HEALTH_POTION,   5);
 
         catalog.put(new Weapon("Hammer-reaper",   450, 9_000, 90), 1);
         catalog.put(new Weapon("Enchanted Sword", 350, 7_000, 75), 1);
@@ -36,9 +42,8 @@ public class Seller {
         catalog.put(new Weapon("Sledgehammer",    200, 2_000, 35), 1);
         catalog.put(new Weapon("Tomahawk",        150, 1_000, 15), 1);
 
-        updateAssortment();
-
-        assortmentUpdater.scheduleAtFixedRate(this::updateAssortment, 10, 10, TimeUnit.MINUTES);
+        assortmentUpdater.scheduleAtFixedRate(this::updateAssortment,
+                0, ASSORTMENT_UPDATE_TIME, TimeUnit.MINUTES);
     }
 
 
@@ -118,7 +123,7 @@ public class Seller {
         System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(10), " ".repeat(37),
                 "Goodbye, come back again! ");
         System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(16), " ".repeat(23),
-                "The assortment is updated every 10 minutes");
+                String.format("The assortment is updated every %2d minutes", ASSORTMENT_UPDATE_TIME));
         System.out.println("=".repeat(120));
     }
 
@@ -167,8 +172,9 @@ public class Seller {
     }
 
     synchronized private void updateAssortment() {
-        catalog.put(STRENGTH_POTION, maxPotionCount.get(Potion.Type.STRENGTH_POTION));
-        catalog.put(AGILITY_POTION, maxPotionCount.get(Potion.Type.AGILITY_POTION));
-        catalog.put(HEALTH_POTION, maxPotionCount.get(Potion.Type.HEALTH_POTION));
+        catalog.put(STRENGTH_POTION,        maxPotionCount.get(Potion.Type.STRENGTH_POTION));
+        catalog.put(AGILITY_POTION,         maxPotionCount.get(Potion.Type.AGILITY_POTION));
+        catalog.put(HEALTH_POTION,          maxPotionCount.get(Potion.Type.HEALTH_POTION));
+        catalog.put(ENHANCED_HEALTH_POTION, maxPotionCount.get(Potion.Type.HEALTH_POTION));
     }
 }
