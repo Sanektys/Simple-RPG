@@ -10,7 +10,7 @@ import java.util.Random;
 public class Battle {
 
     private final Random RANDOM = new Random();
-    private final int FIGHT_START_DELAY = 10_000;
+    private final int FIGHT_START_DELAY = 5_000;
     private final int BATTLE_REPORT_DELAY = 3_000;
     private final int STRIKES_DELAY = 200;
 

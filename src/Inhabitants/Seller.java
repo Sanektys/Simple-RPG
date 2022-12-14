@@ -99,8 +99,8 @@ public class Seller {
         System.out.printf("%1$s%2$s%3$s%2$s%1$s%n", "=".repeat(12), " ".repeat(31),
                 "\"Sunny & Berry Rag\" store catalog ");
         System.out.println("=".repeat(120));
-        System.out.printf("=====       %1$s%2$s%3$s       =====%n", "Available goods: ", " ".repeat(64),
-                String.format("Your gold: %4d", playerGold));
+        System.out.printf("=====       %1$s%2$s%3$s       =====%n", "Available goods:", " ".repeat(64),
+                String.format("Your gold: %5d", playerGold));
 
         int count = 0;
         for (var item : catalog.entrySet()) {

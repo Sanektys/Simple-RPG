@@ -67,7 +67,7 @@ public abstract class Inhabitant {
     }
 
     public void displayStats() {
-        System.out.printf("= Level %-3d  Experience %5d/%-5d   Health %4d/%-4d   Gold %-5d%s=%n",
+        System.out.printf("= Level %-3d  Experience %6d/%-6d  Health %4d/%-4d  Gold %-5d%s=%n",
                 level, experience, (int) nextLevelThreshold, health, maxHealth, gold, "  ");
         System.out.printf("=      Strength %3d/%-3d%7$sLuck %3d/%-3d%7$sAgility %2d/%-2d       =%n",
                 strength, MAX_STRENGTH, luck, MAX_LUCK, agility, MAX_AGILITY, " ".repeat(7));
@@ -192,8 +192,8 @@ public abstract class Inhabitant {
     private void rewardFor(Inhabitant foe) {
         if (this != foe) {
             int earnedExperience = switch (foe.getClass().getSimpleName()) {
-                case "Skeleton" -> 5 * foe.level;
-                case "Goblin" -> 10 * foe.level;
+                case "Skeleton" -> (int) (8 * foe.level * 1.8f);
+                case "Goblin" -> (int) (12 * foe.level * 1.8f);
                 default -> throw new IllegalStateException("Reward for wrong enemy");
             };
             this.experience += earnedExperience;
