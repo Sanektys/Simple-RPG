@@ -125,7 +125,7 @@ public abstract class Inhabitant {
     private void checkNextLevel() {
         while (experience >= (int) nextLevelThreshold && level < MAX_LEVEL) {
             ++level;
-            nextLevelThreshold += nextLevelThreshold * 1.01f;
+            nextLevelThreshold += nextLevelThreshold * 0.6f;
             arrangeNewSkillPoints();
         }
     }
