@@ -20,19 +20,21 @@ public class Seller {
 
     private final ScheduledExecutorService assortmentUpdater = Executors.newSingleThreadScheduledExecutor();
 
-    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION, 20, 340);
-    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION, 5, 570);
-    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION, 100, 90);
+    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION, 15, 340);
+    private final Potion AGILITY_POTION = new Potion(Potion.Type.AGILITY_POTION,    5, 570);
+    private final Potion HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION,    100,  90);
 
 
     public Seller() {
-        maxPotionCount = Map.of(Potion.Type.STRENGTH_POTION, 2,
-                                Potion.Type.AGILITY_POTION, 3,
-                                Potion.Type.HEALTH_POTION, 6);
+        maxPotionCount = Map.of(Potion.Type.STRENGTH_POTION, 3,
+                                Potion.Type.AGILITY_POTION,  2,
+                                Potion.Type.HEALTH_POTION,   6);
 
-        catalog.put(new Weapon("Sword", 250, 4_000, 16), 1);
-        catalog.put(new Weapon("Sledgehammer", 200, 2_000, 8), 1);
-        catalog.put(new Weapon("Tomahawk", 150, 1_000, 4), 1);
+        catalog.put(new Weapon("Hammer-reaper",   450, 9_000, 90), 1);
+        catalog.put(new Weapon("Enchanted Sword", 350, 7_000, 75), 1);
+        catalog.put(new Weapon("Sword",           250, 4_000, 55), 1);
+        catalog.put(new Weapon("Sledgehammer",    200, 2_000, 35), 1);
+        catalog.put(new Weapon("Tomahawk",        150, 1_000, 15), 1);
 
         updateAssortment();
 

@@ -16,7 +16,7 @@ public class Player extends Inhabitant {
     private static final int INITIAL_HEALTH = 100;
     private static final int INITIAL_GOLD = 300;
 
-    private int currentWeaponPower;
+    private int currentWeaponPower = 0;
     private volatile int prevAgilityLevel = agility;
     private volatile int prevStrengthLevel = strength;
 
@@ -201,6 +201,7 @@ public class Player extends Inhabitant {
                 currentWeaponPower = weapon.power;
                 System.out.printf("=   %1$s%2$s=%n",
                         String.format("Now you can deal up to %3d damage!", currentWeaponPower), " ".repeat(81));
+                inventory.add(weapon);  // Взяли и положили обратно
             } else if (equip instanceof Potion potion) {
                 switch (potion.type) {
                     case STRENGTH_POTION -> {
@@ -208,6 +209,7 @@ public class Player extends Inhabitant {
                             System.out.printf("=   %1$s%2$s=%n",
                                     "The strength potion is still working, you can't drink it any more!",
                                     " ".repeat(49));
+                            inventory.add(potion);
                         } else {
                             strengthPotionCanceller = new Thread(() -> {
                                 try {
@@ -236,6 +238,7 @@ public class Player extends Inhabitant {
                             System.out.printf("=   %1$s%2$s=%n",
                                     "The agility potion is still working, you can't drink it any more!",
                                     " ".repeat(50));
+                            inventory.add(potion);
                         } else {
                             agilityPotionCanceller = new Thread(() -> {
                                 try {

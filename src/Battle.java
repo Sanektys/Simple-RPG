@@ -11,7 +11,7 @@ public class Battle {
 
     private final Random RANDOM = new Random();
     private final int FIGHT_START_DELAY = 10_000;
-    private final int BATTLE_REPORT_DELAY = 5_000;
+    private final int BATTLE_REPORT_DELAY = 3_000;
     private final int STRIKES_DELAY = 200;
 
     private volatile boolean fightActive;
@@ -128,7 +128,7 @@ public class Battle {
     }
 
     private Inhabitant newEnemy(int playerLevel) {
-        int enemyLevel = playerLevel - 3 + RANDOM.nextInt(7);  // Уровень противника +-3 от игрока
+        int enemyLevel = playerLevel - 2 + RANDOM.nextInt(5);  // Уровень противника +-2 от игрока
         if (enemyLevel > 100) {
             enemyLevel = 100;
         } else if (enemyLevel <= 0) {

@@ -74,12 +74,15 @@ public abstract class Inhabitant {
     }
 
     public int doStrike(Inhabitant foe) {
-        return doStrike(0, foe);
+        return doStrike(0, foe);  // Если сила оружия 0, то драка "кулаками", т.е. исключительно от strength
     }
 
     public int doStrike(int weaponPower, Inhabitant foe) {
         if (foe == this || !isAlive) {
             return -1;
+        }
+        if (weaponPower < 0) {
+            throw new IllegalStateException("Power of weapon is below zero");
         }
         int strikeStrength = strikeStrength();
         if (strikeStrength == 0) {
