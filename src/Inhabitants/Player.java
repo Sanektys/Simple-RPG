@@ -220,7 +220,7 @@ public class Player extends Inhabitant {
                                 synchronized (skillsMonitor) {
                                     strength = prevStrengthLevel;
                                 }
-                                System.out.println("The potion of strength has ceased to work!");
+                                System.err.println("The potion of strength has ceased to work!");
                             });
                             strengthPotionCanceller.setDaemon(true);
                             strengthPotionCanceller.start();
@@ -249,7 +249,7 @@ public class Player extends Inhabitant {
                                 synchronized (skillsMonitor) {
                                     agility = prevAgilityLevel;
                                 }
-                                System.out.println("The potion of agility has ceased to work!");
+                                System.err.println("The potion of agility has ceased to work!");
                             });
                             agilityPotionCanceller.setDaemon(true);
                             agilityPotionCanceller.start();

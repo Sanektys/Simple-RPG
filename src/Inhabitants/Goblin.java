@@ -9,7 +9,7 @@ public class Goblin extends Inhabitant {
                         : level < 40 ? "Goblin Lumberjack"
                         : level < 60 ? "Goblin Butcher"
                         : level < 80 ? "Goblin Master" : "Goblin Behemoth",
-                50, level, RANDOM.nextInt(121) + 40);
+                80, level, RANDOM.nextInt(71) + 40);
         WEAPON_POWER = level < 20 ? 50
                 : level < 40 ? 100
                 : level < 60 ? 150

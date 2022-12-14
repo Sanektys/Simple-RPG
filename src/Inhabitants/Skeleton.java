@@ -8,7 +8,7 @@ public class Skeleton extends Inhabitant {
                         : level < 40 ? "Skeleton Defender"
                         : level < 60 ? "Skeleton Archer"
                         : level < 80 ? "Goblin Sinister" : "Skeleton Superior",
-                50, level, RANDOM.nextInt(170) + 90);
+                50, level, RANDOM.nextInt(111) + 90);
         WEAPON_POWER = level < 20 ? 80
                 : level < 40 ? 140
                 : level < 60 ? 200
@@ -23,6 +23,6 @@ public class Skeleton extends Inhabitant {
     @Override
     protected void arrangeNewSkillPoints() {
         super.arrangeNewSkillPoints();
-        health = maxHealth += 15;
+        health = maxHealth += 20;
     }
 }

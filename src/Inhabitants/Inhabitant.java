@@ -14,7 +14,7 @@ public abstract class Inhabitant {
     private int experience;
     private int level = 1;  // [1 - 100]
     private final int MAX_LEVEL = 100;
-    private int nextLevelThreshold = 10;
+    private float nextLevelThreshold = 10f;
 
     protected volatile int agility = 1;  // [1 - 30]
     protected final int MAX_AGILITY = 30;
@@ -68,7 +68,7 @@ public abstract class Inhabitant {
 
     public void displayStats() {
         System.out.printf("= Level %-3d  Experience %5d/%-5d   Health %4d/%-4d   Gold %-5d%s=%n",
-                level, experience, nextLevelThreshold, health, maxHealth, gold, "  ");
+                level, experience, (int) nextLevelThreshold, health, maxHealth, gold, "  ");
         System.out.printf("=      Strength %3d/%-3d%7$sLuck %3d/%-3d%7$sAgility %2d/%-2d       =%n",
                 strength, MAX_STRENGTH, luck, MAX_LUCK, agility, MAX_AGILITY, " ".repeat(7));
     }
@@ -123,9 +123,9 @@ public abstract class Inhabitant {
     }
 
     private void checkNextLevel() {
-        while (experience >= nextLevelThreshold && level < MAX_LEVEL) {
+        while (experience >= (int) nextLevelThreshold && level < MAX_LEVEL) {
             ++level;
-            nextLevelThreshold += nextLevelThreshold * 1.1f;
+            nextLevelThreshold += nextLevelThreshold * 1.01f;
             arrangeNewSkillPoints();
         }
     }
