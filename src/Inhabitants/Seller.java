@@ -21,14 +21,20 @@ public class Seller {
     private final ScheduledExecutorService assortmentUpdater = Executors.newSingleThreadScheduledExecutor();
     private final int ASSORTMENT_UPDATE_TIME = 15;
 
-    private final Potion STRENGTH_POTION = new Potion(Potion.Type.STRENGTH_POTION,
-             15, 340);
-    private final Potion AGILITY_POTION  = new Potion(Potion.Type.AGILITY_POTION,
-              5, 570);
-    private final Potion HEALTH_POTION   = new Potion(Potion.Type.HEALTH_POTION,
-            100,  90);
+    private final Potion WEAK_STRENGTH_POTION   = new Potion(Potion.Type.STRENGTH_POTION,
+               8, 340);
+    private final Potion STRENGTH_POTION        = new Potion(Potion.Type.STRENGTH_POTION,
+              15, 600);
+    private final Potion WEAK_AGILITY_POTION    = new Potion(Potion.Type.AGILITY_POTION,
+               3, 410);
+    private final Potion AGILITY_POTION         = new Potion(Potion.Type.AGILITY_POTION,
+               5, 730);
+    private final Potion HEALTH_POTION          = new Potion(Potion.Type.HEALTH_POTION,
+             250, 170);
     private final Potion ENHANCED_HEALTH_POTION = new Potion(Potion.Type.HEALTH_POTION,
-            250, 190);
+             500, 320);
+    private final Potion SUPER_HEALTH_POTION    = new Potion(Potion.Type.HEALTH_POTION,
+            1000, 560);
 
 
     public Seller() {
@@ -37,7 +43,7 @@ public class Seller {
                                 Potion.Type.HEALTH_POTION,   5);
 
         catalog.put(new Weapon("Hammer-reaper",   450, 9_000, 90), 1);
-        catalog.put(new Weapon("Enchanted Sword", 350, 7_000, 75), 1);
+        catalog.put(new Weapon("Enchanted Sword", 350, 6_000, 75), 1);
         catalog.put(new Weapon("Sword",           250, 4_000, 55), 1);
         catalog.put(new Weapon("Sledgehammer",    200, 2_000, 35), 1);
         catalog.put(new Weapon("Tomahawk",        150, 1_000, 15), 1);
@@ -105,13 +111,13 @@ public class Seller {
         int count = 0;
         for (var item : catalog.entrySet()) {
             ++count;
-            System.out.printf("= (%d) ", count);
+            System.out.printf("= (%2d) ", count);
             if (item.getKey() instanceof Weapon) {
                 System.out.print("Weapon - ");
             } else if (item.getKey() instanceof Potion) {
                 System.out.print("Potion - ");
             }
-            System.out.printf("%-104s", String.format("%s (available %d pieces)", item.getKey(), item.getValue()));
+            System.out.printf("%-103s", String.format("%s (available %d pieces)", item.getKey(), item.getValue()));
             System.out.println("=");
         }
         System.out.println("=".repeat(120));
@@ -172,9 +178,12 @@ public class Seller {
     }
 
     synchronized private void updateAssortment() {
+        catalog.put(WEAK_STRENGTH_POTION,   maxPotionCount.get(Potion.Type.STRENGTH_POTION));
         catalog.put(STRENGTH_POTION,        maxPotionCount.get(Potion.Type.STRENGTH_POTION));
+        catalog.put(WEAK_AGILITY_POTION,    maxPotionCount.get(Potion.Type.AGILITY_POTION));
         catalog.put(AGILITY_POTION,         maxPotionCount.get(Potion.Type.AGILITY_POTION));
         catalog.put(HEALTH_POTION,          maxPotionCount.get(Potion.Type.HEALTH_POTION));
         catalog.put(ENHANCED_HEALTH_POTION, maxPotionCount.get(Potion.Type.HEALTH_POTION));
+        catalog.put(SUPER_HEALTH_POTION,    maxPotionCount.get(Potion.Type.HEALTH_POTION));
     }
 }
