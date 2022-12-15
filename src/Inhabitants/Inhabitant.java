@@ -100,7 +100,7 @@ public abstract class Inhabitant {
     }
 
     private int strikeStrength() {
-        int probabilityOfFail = RANDOM.nextInt(level + 6) + 1 - luck;
+        int probabilityOfFail = RANDOM.nextInt(level * 2 + 6) + 1 - luck;
         return (agility * 3 > probabilityOfFail) ? strength : 0;
     }
 
@@ -125,7 +125,7 @@ public abstract class Inhabitant {
     private void checkNextLevel() {
         while (experience >= (int) nextLevelThreshold && level < MAX_LEVEL) {
             ++level;
-            nextLevelThreshold += nextLevelThreshold * 0.6f;
+            nextLevelThreshold += nextLevelThreshold * 0.4f;
             arrangeNewSkillPoints();
         }
     }
@@ -191,11 +191,26 @@ public abstract class Inhabitant {
 
     private void rewardFor(Inhabitant foe) {
         if (this != foe) {
-            int earnedExperience = switch (foe.getClass().getSimpleName()) {
-                case "Skeleton" -> (int) (8 * foe.level * 1.8f);
-                case "Goblin" -> (int) (12 * foe.level * 1.8f);
-                default -> throw new IllegalStateException("Reward for wrong enemy");
-            };
+            int earnedExperience;
+            if (foe instanceof Skeleton skeleton) {
+                earnedExperience = switch (skeleton.getType()) {
+                    case Common   -> 8 * foe.level;
+                    case Defender -> 14 * foe.level;
+                    case Archer   -> 22 * foe.level;
+                    case Sinister -> 32 * foe.level;
+                    case Superior -> 46 * foe.level;
+                };
+            } else if (foe instanceof Goblin goblin) {
+                earnedExperience = switch (goblin.getType()) {
+                    case Common   -> 12 * foe.level;
+                    case Butcher  -> 20 * foe.level;
+                    case Beast    -> 32 * foe.level;
+                    case Master   -> 48 * foe.level;
+                    case Behemoth -> 70 * foe.level;
+                };
+            } else {
+                throw new IllegalStateException("Reward for wrong enemy");
+            }
             this.experience += earnedExperience;
             System.out.printf("\tYou earned %d experience%n", earnedExperience);
             enemyLooting(foe);

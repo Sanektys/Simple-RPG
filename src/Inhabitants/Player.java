@@ -14,7 +14,7 @@ public class Player extends Inhabitant {
 
     private final Inventory inventory = new Inventory();
     private static final int INITIAL_HEALTH = 100;
-    private static final int INITIAL_GOLD = 300;
+    private static final int INITIAL_GOLD = 320;
 
     private int currentWeaponPower = 0;
     private volatile int prevAgilityLevel = agility;
@@ -23,6 +23,10 @@ public class Player extends Inhabitant {
 
     public Player(String name) {
         super(name, INITIAL_HEALTH, 1, INITIAL_GOLD);
+        inventory.addEquipment(new Potion(Potion.Type.STRENGTH_POTION, 5, 0));
+        inventory.addEquipment(new Potion(Potion.Type.AGILITY_POTION,  2, 0));
+        inventory.addEquipment(new Potion(Potion.Type.HEALTH_POTION, 100, 0));
+        inventory.addEquipment(new Potion(Potion.Type.HEALTH_POTION, 100, 0));
     }
 
 
